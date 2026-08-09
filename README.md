@@ -98,4 +98,4 @@ Two, with different rules:
 
 Shared blocks are designed **mill-safe**, which is the stricter of the two, so
 they remain fabbable either way. See
-`eurorack-blocks/design-rules/house-mill.kicad_dru`.
+`eurorack-common-library/design-rules/house-mill.kicad_dru`.
