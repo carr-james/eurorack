@@ -1,0 +1,27 @@
+[submodule "cem3340-vco"]
+	path = cem3340-vco
+	url = git@github.com:carr-james/cem3340-vco.git
+[submodule "eurorack-blocks"]
+	path = eurorack-blocks
+	url = git@github.com:carr-james/eurorack-blocks.git
+[submodule "eurorack-breakouts"]
+	path = eurorack-breakouts
+	url = git@github.com:carr-james/eurorack-breakouts.git
+[submodule "eurorack-common-library"]
+	path = eurorack-common-library
+	url = git@github.com:carr-james/eurorack-common-library.git
+[submodule "eurorack-docker"]
+	path = eurorack-docker
+	url = git@github.com:carr-james/eurorack-docker.git
+[submodule "eurorack-docs"]
+	path = eurorack-docs
+	url = git@github.com:carr-james/eurorack-docs.git
+[submodule "eurorack-docs-ui"]
+	path = eurorack-docs-ui
+	url = git@github.com:carr-james/eurorack-docs-ui.git
+[submodule "eurorack-workflows"]
+	path = eurorack-workflows
+	url = git@github.com:carr-james/eurorack-workflows.git
+[submodule "quad-vca-mixer"]
+	path = quad-vca-mixer
+	url = git@github.com:carr-james/quad-vca-mixer.git
