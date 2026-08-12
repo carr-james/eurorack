@@ -66,6 +66,15 @@ The placement is only good if DRC reports **zero** of `clearance`,
 `courtyards_overlap`, `shorting_items`, `hole_to_hole`, `pth_inside_courtyard`.
 `unconnected_items` is expected: nothing is routed yet.
 
+## The one rule behind most of these
+
+**If a value exists in the .kicad_pcb, read it. Never encode a default for it.**
+
+Four separate bugs were all this mistake: assuming the origin is the courtyard
+centre, assuming the layer is called `Courtyard`, assuming a circle is two
+corners, and hardcoding a pad half-size of 0.35mm when pads are 1.6mm. Each
+looked plausible and each produced a board that shorts.
+
 ## Known failure modes
 
 Every one of these produced a wrong answer that looked plausible.
@@ -91,8 +100,50 @@ from each check leaves exactly the one pair that can newly collide untested.
 after annealing that relocates anything still illegal to its nearest free slot.
 The guarantee belongs at the output, not only in the acceptance test.
 
+**Pad collision needs the pad's real size.** `pad_rects` reads `(size ...)`.
+A fixed half-size let 1.6mm pads sit 0.8mm apart across sides: eight shorting
+items and eight mask bridges.
+
+**Flipping must mirror the text too.** Negating Y and swapping layers is not
+enough; back-side text needs the `mirror` justify flag or KiCad reports
+`nonmirrored_text_on_back_layer`.
+
+**`fps[ref]['pads']` tuples are positional and have grown.** Index them, do not
+unpack. Widening them from 3 fields to 5 crashed a consumer that still said
+`for q, lx, ly in ...`.
+
+**Keep selfcheck.py in step with the model.** When collision became side aware,
+the checker did not, and reported 13 phantom overlaps that were easy to wave
+away as conservatism. A verification tool that lags the thing it verifies has
+stopped verifying.
+
 **Silence is not agreement.** A model reporting zero overlaps while DRC reports
 39 is a broken model, not a clean board. Reconcile the two numbers.
+
+## Constraints it now models
+
+| Constraint | How |
+|---|---|
+| Ratsnest crossings | primary objective, `--w-cross` |
+| Bypass cap next to its IC power pin | `--w-adj` per mm beyond `--adj-target`, measured pad to pad on the shared rail |
+| Sub-circuits stay together | `--blocks`, a pull toward each group's centroid |
+| Parts on the back | `--back`, courtyards free across sides, pads still conflict |
+| Fixed positions | `--fixed`, and `--pin ref=x,y,rot` for standardised locations |
+| Tidy rows and columns | `--align`, reverted per part if it would be illegal |
+
+## Not modelled yet
+
+- **Through-hole pads under another part's body.** Flipping parts produces
+  `pth_inside_courtyard` across sides. On a plated board that is cosmetic. With
+  unplated holes it is an assembly blocker, because you cannot get an iron to a
+  pad that sits under a DIP. Consider forbidding pads inside the opposite side's
+  courtyard, which is stricter than pad versus pad and looser than courtyard
+  versus courtyard.
+- **Component height.** "Tall parts on the back" is currently a list the caller
+  passes. The real rule is a ceiling on one side, and the tool should derive the
+  assignment from part heights.
+- **Analogue and digital separation.**
+- **Consistent orientation for polarised parts.**
 
 ## Open issue
 

@@ -9,12 +9,23 @@ import subprocess, sys, re, tempfile, os
 import kicadpcb as K
 
 def model_overlaps(pcb):
+    """Side aware, matching KiCad: courtyards only conflict on the same side.
+    Across sides only the pads and holes conflict."""
     src, fps = K.load(pcb)
     onb = [r for r in fps if not re.match(r'^(MH|FID)\d+$', r)]
     rect = {r: K.abs_rect(K.local_rect(src, fps, r), fps[r]['x'], fps[r]['y'], fps[r]['rot'])
             for r in onb}
-    return {tuple(sorted((a, b))) for i, a in enumerate(onb) for b in onb[i+1:]
-            if K.overlaps(rect[a], rect[b])}
+    side = {r: K.side(src, fps, r) for r in onb}
+    pads = {r: K.pad_rects(fps, r, fps[r]['x'], fps[r]['y'], fps[r]['rot']) for r in onb}
+    bad = set()
+    for i, a in enumerate(onb):
+        for b in onb[i+1:]:
+            if not K.overlaps(rect[a], rect[b]): continue
+            if side[a] == side[b]:
+                bad.add(tuple(sorted((a, b))))
+            elif any(K.overlaps(pa, pb) for pa in pads[a] for pb in pads[b]):
+                bad.add(tuple(sorted((a, b))))
+    return bad
 
 def drc_overlaps(pcb):
     rpt = tempfile.mktemp(suffix=".rpt")
